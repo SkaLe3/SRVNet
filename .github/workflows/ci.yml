@@ -1,0 +1,193 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build:
+    name: ${{ matrix.os }} | ${{ matrix.compiler }} | ${{ matrix.config }}
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        include:
+          # =======================
+          # Windows / MSVC
+          # =======================
+          - os: windows-latest
+            compiler: msvc
+            config: Debug
+
+          - os: windows-latest
+            compiler: msvc
+            config: Release
+
+          # =======================
+          # Windows / Clang
+          # =======================
+          - os: windows-latest
+            compiler: clang
+            config: Debug
+
+          # =======================
+          # Windows / GCC (MinGW)
+          # =======================
+          - os: windows-latest
+            compiler: gcc
+            config: Debug
+
+          # =======================
+          # Linux / GCC
+          # =======================
+          - os: ubuntu-latest
+            compiler: gcc
+            config: Debug
+
+          - os: ubuntu-latest
+            compiler: gcc
+            config: Release
+
+          - os: ubuntu-latest
+            compiler: gcc
+            config: Debug
+            asan: ON
+            ubsan: ON
+
+          # =======================
+          # Linux / Clang
+          # =======================
+          - os: ubuntu-latest
+            compiler: clang
+            config: Debug
+
+    steps:
+      - uses: actions/checkout@v4
+
+      ##########################################################################
+      # Install compilers
+      ##########################################################################
+
+      - name: Install GCC
+        if: runner.os == 'Linux' && matrix.compiler == 'gcc'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++
+
+      - name: Install Clang
+        if: runner.os == 'Linux' && matrix.compiler == 'clang'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang
+
+      - name: Setup Clang (Windows)
+        if: runner.os == 'Windows' && matrix.compiler == 'clang'
+        uses: egor-tensin/setup-clang@v1
+
+      - name: Setup MinGW
+        if: runner.os == 'Windows' && matrix.compiler == 'gcc'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc
+
+      ##########################################################################
+      # Configure (MSVC)
+      ##########################################################################
+
+      - name: Configure MSVC
+        if: runner.os == 'Windows' && matrix.compiler == 'msvc'
+        run: >
+          cmake
+          -S .
+          -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DSRVN_BUILD_SAMPLES=ON
+          -DSRVN_BUILD_TESTS=ON
+          -DSRVN_WARNINGS_AS_ERRORS=ON
+
+      ##########################################################################
+      # Configure (Windows Clang)
+      ##########################################################################
+
+      - name: Configure Clang
+        if: runner.os == 'Windows' && matrix.compiler == 'clang'
+        run: >
+          cmake
+          -S .
+          -B build
+          -T ClangCL
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DSRVN_BUILD_SAMPLES=ON
+          -DSRVN_BUILD_TESTS=ON
+          -DSRVN_WARNINGS_AS_ERRORS=ON
+
+      ##########################################################################
+      # Configure (Windows GCC)
+      ##########################################################################
+
+      - name: Configure MinGW
+        if: runner.os == 'Windows' && matrix.compiler == 'gcc'
+        shell: msys2 {0}
+        run: >
+          cmake
+          -S .
+          -B build
+          -G "MinGW Makefiles"
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DSRVN_BUILD_SAMPLES=ON
+          -DSRVN_BUILD_TESTS=ON
+          -DSRVN_WARNINGS_AS_ERRORS=ON
+
+      ##########################################################################
+      # Configure (Linux GCC)
+      ##########################################################################
+
+      - name: Configure GCC
+        if: runner.os == 'Linux' && matrix.compiler == 'gcc'
+        run: >
+          cmake
+          -S .
+          -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DSRVN_BUILD_SAMPLES=ON
+          -DSRVN_BUILD_TESTS=ON
+          -DSRVN_WARNINGS_AS_ERRORS=ON
+          -DSRVN_ENABLE_ASAN=${{ matrix.asan || 'OFF' }}
+          -DSRVN_ENABLE_UBSAN=${{ matrix.ubsan || 'OFF' }}
+
+      ##########################################################################
+      # Configure (Linux Clang)
+      ##########################################################################
+
+      - name: Configure Clang
+        if: runner.os == 'Linux' && matrix.compiler == 'clang'
+        env:
+          CC: clang
+          CXX: clang++
+        run: >
+          cmake
+          -S .
+          -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DSRVN_BUILD_SAMPLES=ON
+          -DSRVN_BUILD_TESTS=ON
+          -DSRVN_WARNINGS_AS_ERRORS=ON
+
+      ##########################################################################
+      # Build
+      ##########################################################################
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.config }} --parallel
+
+      ##########################################################################
+      # Test
+      ##########################################################################
+
+      - name: Test
+        run: ctest --test-dir build -C ${{ matrix.config }} --output-on-failure
