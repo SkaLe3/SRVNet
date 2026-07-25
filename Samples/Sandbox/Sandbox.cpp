@@ -1,7 +1,7 @@
 #include <iostream>
-
+#include <SRVNet.h>
 int main()
 {
-    std::cout << "Hello World!" << std::endl;
+    std::cout << "Running SRVNet v" << SRVN::Version::string << "\n";
     return 0;
 }

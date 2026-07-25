@@ -1,10 +1,21 @@
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/SRVNet/Version.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/Public/SRVNet/Version.h"
+    @ONLY
+)
+
 file(GLOB_RECURSE SRVNET_SOURCES CONFIGURE_DEPENDS
     "Public/*.h"
     "Private/*.h"
     "Private/*.cpp"
 )
 
-add_library(SRVNet ${SRVNET_SOURCES})
+set(SRVNET_GENERATED_SOURCES
+    "${CMAKE_CURRENT_BINARY_DIR}/Public/SRVNet/Version.h"
+)
+
+add_library(SRVNet ${SRVNET_SOURCES} ${SRVNET_GENERATED_SOURCES})
 add_library(SRVNet::SRVNet ALIAS SRVNet)
 
 target_compile_features(SRVNet PUBLIC cxx_std_20)
@@ -12,6 +23,7 @@ target_compile_features(SRVNet PUBLIC cxx_std_20)
 target_include_directories(SRVNet
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Public>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/Public>
     PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Private>
 )
@@ -54,4 +66,10 @@ set_target_properties(SRVNet PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRVNET_SOURCES})
+source_group(
+    TREE "${CMAKE_CURRENT_BINARY_DIR}/Public"
+    PREFIX "Generated Files"
+    FILES ${SRVNET_GENERATED_SOURCES}
+)

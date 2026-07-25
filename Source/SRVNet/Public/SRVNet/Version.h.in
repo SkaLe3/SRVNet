@@ -1,0 +1,25 @@
+#ifndef SRVNET_VERSION_H
+#define SRVNET_VERSION_H
+
+// Integer version macros (useful for compile-time preprocessor checks)
+#define SRVN_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define SRVN_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define SRVN_VERSION_PATCH @PROJECT_VERSION_PATCH@
+
+// Combined string version macro
+#define SRVN_VERSION_STRING "@PROJECT_VERSION@"
+
+// Utility macro for numerical version comparisons (e.g., #if SRVN_VERSION_CODE >= SRVN_MAKE_VERSION(2,7,0))
+#define SRVN_MAKE_VERSION(major, minor, patch) (((major) * 10000) + ((minor) * 100) + (patch))
+#define SRVN_VERSION_CODE SRVN_MAKE_VERSION(SRVN_VERSION_MAJOR, SRVN_VERSION_MINOR, SRVN_VERSION_PATCH)
+
+namespace SRVN {
+    struct Version {
+        static constexpr int major = SRVN_VERSION_MAJOR;
+        static constexpr int minor = SRVN_VERSION_MINOR;
+        static constexpr int patch = SRVN_VERSION_PATCH;
+        static constexpr const char* string = SRVN_VERSION_STRING;
+    };
+}
+
+#endif // SRVNET_VERSION_H
