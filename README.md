@@ -2,8 +2,9 @@
 A cross-platform game oriented networking library
 
 ## TODO:
-- Test coverage
-- Resource files
-- Intallation
+- install() / find_package()
+- Windows .rc version resource
+- GitHub Releases
+- Code coverage
 - Documentation
 - Write the library :D
