@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# SRVNet CMake Options & Build Helper Usage (Linux)
+# ==============================================================================
+
+echo "=============================================================================="
+echo "                     SRVNet CMake Build System & Usage (Linux)"
+echo "=============================================================================="
+echo ""
+echo "[1] Available SRVNet CMake Options:"
+echo "------------------------------------------------------------------------------"
+echo "  Option                     Default  Description"
+echo "  -------------------------  -------  ----------------------------------------"
+echo "  BUILD_SHARED_LIBS          OFF      Build SRVNet as shared (.so) library"
+echo "  SRVN_BUILD_SAMPLES         OFF      Build sample/example executables (Sandbox)"
+echo "  SRVN_BUILD_TESTS           OFF      Build test suite targets"
+echo "  SRVN_WARNINGS_AS_ERRORS    OFF      Treat compiler warnings as fatal errors"
+echo ""
+echo "  SRVN_ENABLE_ASAN           OFF      Enable Address Sanitizer"
+echo "  SRVN_ENABLE_UBSAN          OFF      Enable Undefined Behaviour Sanitizer (Clang/GCC)"
+echo "  SRVN_ENABLE_TSAN           OFF      Enable Thread Sanitizer (Clang/GCC)"
+echo ""
+echo "[2] Standard CMake Options:"
+echo "------------------------------------------------------------------------------"
+echo "  CMAKE_BUILD_TYPE           Release  Choose configuration: Debug, Release"
+echo ""
+echo "[3] Helper Build Scripts (in Scripts/Linux/):"
+echo "------------------------------------------------------------------------------"
+echo "  ./print_usage.sh  - Display this usage information"
+echo "  ./build_gcc.sh    - Build Debug, Release, ASan, TSan, UBSan using GCC (g++)"
+echo "  ./build_clang.sh  - Build Debug, Release, ASan, TSan, UBSan, MSan using Clang (clang++)"
+echo "=============================================================================="
