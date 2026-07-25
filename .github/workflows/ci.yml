@@ -93,7 +93,11 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
-          install: mingw-w64-x86_64-gcc
+          update: true
+          install: >
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-make
 
       ##########################################################################
       # Configure (MSVC)
@@ -182,12 +186,26 @@ jobs:
       # Build
       ##########################################################################
 
+      - name: Build (MinGW)
+        if: runner.os == 'Windows' && matrix.compiler == 'gcc'
+        shell: msys2 {0}
+        run: |
+          cmake --build build --parallel
+
       - name: Build
+        if: matrix.compiler != 'gcc' || runner.os != 'Windows'
         run: cmake --build build --config ${{ matrix.config }} --parallel
 
       ##########################################################################
       # Test
       ##########################################################################
 
+      - name: Test (MinGW)
+        if: runner.os == 'Windows' && matrix.compiler == 'gcc'
+        shell: msys2 {0}
+        run: |
+          ctest --test-dir build --output-on-failure
+
       - name: Test
+        if: matrix.compiler != 'gcc' || runner.os != 'Windows'
         run: ctest --test-dir build -C ${{ matrix.config }} --output-on-failure
