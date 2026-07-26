@@ -10,6 +10,11 @@ file(GLOB_RECURSE SRVNET_SOURCES CONFIGURE_DEPENDS
     "Private/*.h"
     "Private/*.cpp"
 )
+if(SRVN_OS_WINDOWS)
+    list(FILTER SRVNET_SOURCES EXCLUDE REGEX ".*/Unix/.*")
+elseif(UNIX)
+    list(FILTER SRVNET_SOURCES EXCLUDE REGEX ".*/Windows/.*")
+endif()
 
 set(SRVNET_GENERATED_SOURCES
     "${CMAKE_CURRENT_BINARY_DIR}/Public/SRVNet/Version.h"
@@ -28,8 +33,11 @@ target_include_directories(SRVNet
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Private>
 )
 
+# TODO: Add custom SRVN_BUILD_SHARED_LIBS
 target_compile_definitions(SRVNet PRIVATE
     $<$<BOOL:${BUILD_SHARED_LIBS}>:SRVNET_EXPORTS>
+)
+target_compile_definitions(SRVNet PUBLIC
     $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:SRVNET_STATIC>
 )
 
@@ -50,7 +58,7 @@ if(SRVN_OS_WINDOWS)
         _CRT_SECURE_NO_WARNINGS
         _WINSOCK_DEPRECATED_NO_WARNINGS
     )
-    target_link_libraries(SRVNet PRIVATE ws2_32 iphlpapi)
+    target_link_libraries(SRVNet PRIVATE ws2_32 iphlpapi winmm)
 elseif(UNIX)
     find_package(Threads REQUIRED)
     target_link_libraries(SRVNet PRIVATE Threads::Threads)
